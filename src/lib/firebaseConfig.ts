@@ -23,12 +23,12 @@
  *    apiKey below is filled in.
  */
 export const firebaseConfig = {
-  apiKey: '',
-  authDomain: '',
-  projectId: '',
-  storageBucket: '',
-  messagingSenderId: '',
-  appId: '',
+  apiKey: 'AIzaSyD93yWtftavhIMv-H29dS65zwM79hJrlJE',
+  authDomain: 'chairtalk-22a92.firebaseapp.com',
+  projectId: 'chairtalk-22a92',
+  storageBucket: 'chairtalk-22a92.firebasestorage.app',
+  messagingSenderId: '652967999544',
+  appId: '1:652967999544:web:71affaa96f3a64e42e0ecd',
 }
 
 export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId)
