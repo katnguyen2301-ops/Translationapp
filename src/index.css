@@ -18,9 +18,17 @@
   }
   body {
     margin: 0;
+    min-height: 100vh;
     font-family: var(--font-sans);
-    background: #fff;
     color-scheme: light;
+    background-color: #f6f8fb;
+    background-image:
+      radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--color-brand) 16%, transparent) 0%, transparent 42%),
+      radial-gradient(circle at 92% 14%, color-mix(in srgb, var(--color-vietnamese) 14%, transparent) 0%, transparent 40%),
+      radial-gradient(circle at 12% 92%, color-mix(in srgb, var(--color-mandarin) 12%, transparent) 0%, transparent 38%),
+      radial-gradient(circle at 96% 96%, color-mix(in srgb, var(--color-gold) 16%, transparent) 0%, transparent 36%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
   button {
     font-family: inherit;

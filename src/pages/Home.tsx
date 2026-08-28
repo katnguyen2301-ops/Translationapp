@@ -15,7 +15,7 @@ export function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
+    <div className="min-h-screen">
       <header className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2 text-xl font-extrabold text-slate-800">
           <span className="text-3xl">🦷</span> ChairTalk

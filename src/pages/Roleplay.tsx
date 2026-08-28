@@ -97,7 +97,7 @@ export function Roleplay() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-16">
+    <div className="min-h-screen pb-16">
       <TopBar course={course} showBack />
       <div className="mx-auto max-w-xl px-4 py-6">
         <h1 className="text-2xl font-extrabold text-slate-800">🎭 {roleplay.title}</h1>
@@ -244,14 +244,20 @@ export function Roleplay() {
         </div>
 
         {allRevealed && (
-          <div className="mt-8 flex flex-col items-center gap-4">
+          <div className="mt-8 flex flex-col items-center gap-3">
             <p className="text-xl font-extrabold text-slate-800">Visit complete! 🎉</p>
             <button
               onClick={() => navigate(`/learn/${course.id}`)}
-              className="rounded-2xl px-8 py-3 font-extrabold text-white btn-3d"
+              className="w-full max-w-xs rounded-2xl px-8 py-3 font-extrabold text-white btn-3d"
               style={{ backgroundColor: course.colorHex }}
             >
               Back to path
+            </button>
+            <button
+              onClick={() => setRevealed(new Set())}
+              className="w-full max-w-xs rounded-2xl border-2 border-slate-200 bg-white px-8 py-3 font-bold text-slate-600 hover:bg-slate-50"
+            >
+              🔁 Practice this conversation again
             </button>
           </div>
         )}

@@ -29,9 +29,23 @@ export function Learn() {
   let previousDone = true // first lesson always unlocked
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen pb-24">
       <TopBar course={course} />
       <div className="mx-auto max-w-xl px-4">
+        <div className="pt-6">
+          <Link
+            to={`/quick/${course.id}`}
+            className="flex items-center gap-3 rounded-2xl px-5 py-4 text-white shadow-md btn-3d"
+            style={{ backgroundColor: course.colorHex, '--btn-shadow': shade(course.colorHex) } as CSSProperties}
+          >
+            <span className="text-3xl">💬</span>
+            <span className="flex-1">
+              <span className="block text-lg font-extrabold">Quick Phrases</span>
+              <span className="block text-sm opacity-90">Look up and speak a phrase live with a patient</span>
+            </span>
+            <span className="text-2xl">→</span>
+          </Link>
+        </div>
         {course.id === 'vietnamese' && (
           <div className="pt-6">
             <PronounCheatSheet />

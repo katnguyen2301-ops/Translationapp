@@ -51,7 +51,7 @@ export function DialoguePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-16">
+    <div className="min-h-screen pb-16">
       <TopBar course={course} showBack />
       <div className="mx-auto max-w-xl px-4 py-6">
         <h1 className="text-2xl font-extrabold text-slate-800">{dialogue.title}</h1>

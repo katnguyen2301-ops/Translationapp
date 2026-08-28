@@ -1,7 +1,7 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getCourse, coursePhrasePool } from '../data/courses'
-import type { Exercise, LanguageId } from '../data/types'
+import type { Exercise, Lesson as LessonData, LanguageCourse, LanguageId } from '../data/types'
 import { generateExercises } from '../lib/exerciseGenerator'
 import { useProgress } from '../store/useProgress'
 import { TopBar } from '../components/TopBar'
@@ -14,6 +14,14 @@ import { PhraseBreakdown } from '../components/PhraseBreakdown'
 
 type Phase = 'main' | 'reviewIntro' | 'review'
 
+/** A fresh random seed each call, so replaying a lesson for extra practice
+ * shuffles distractors/order differently instead of repeating the exact
+ * same run every time. */
+function freshExercises(lesson: LessonData, course: LanguageCourse): Exercise[] {
+  const seed = Math.floor(Math.random() * 1_000_000)
+  return generateExercises(lesson, coursePhrasePool(course), course.id, seed)
+}
+
 export function Lesson() {
   const { lang, lessonId } = useParams<{ lang: LanguageId; lessonId: string }>()
   const navigate = useNavigate()
@@ -24,13 +32,8 @@ export function Lesson() {
   const heartsNow = useProgress((s) => s.getEffectiveHearts())
   const completeLesson = useProgress((s) => s.completeLesson)
 
-  const initialExercises = useMemo(() => {
-    if (!course || !lesson) return []
-    return generateExercises(lesson, coursePhrasePool(course), course.id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lesson?.id])
-
-  const [mainQueue, setMainQueue] = useState<Exercise[]>(initialExercises)
+  const [mainQueue, setMainQueue] = useState<Exercise[]>(() => (course && lesson ? freshExercises(lesson, course) : []))
+  const [total, setTotal] = useState(mainQueue.length)
   const [reviewQueue, setReviewQueue] = useState<Exercise[]>([])
   const [phase, setPhase] = useState<Phase>('main')
   const [answeredState, setAnsweredState] = useState<null | boolean>(null)
@@ -48,8 +51,21 @@ export function Lesson() {
     )
   }
 
-  const total = initialExercises.length
   const current = phase === 'review' ? reviewQueue[0] : mainQueue[0]
+
+  function practiceAgain() {
+    const fresh = freshExercises(lesson!, course!)
+    setMainQueue(fresh)
+    setTotal(fresh.length)
+    setReviewQueue([])
+    setPhase('main')
+    setAnsweredState(null)
+    setResolvedCount(0)
+    setMistakeIds(new Set())
+    setPhraseMissCounts({})
+    setAttempt((a) => a + 1)
+    setDone(false)
+  }
 
   function handleAnswered(correct: boolean) {
     setAnsweredState(correct)
@@ -114,6 +130,7 @@ export function Lesson() {
         correctCount={total - mistakeIds.size}
         wrongCount={mistakeIds.size}
         onContinue={() => navigate(`/learn/${course.id}`)}
+        onPracticeAgain={practiceAgain}
       />
     )
   }

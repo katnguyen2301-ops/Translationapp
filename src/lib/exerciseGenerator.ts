@@ -84,12 +84,20 @@ function buildMatch(phrases: Phrase[], seed: number): MatchExercise {
 /**
  * Turns a lesson's teaching phrases into a full exercise sequence, drawing
  * distractors from a wider course-level pool so options stay plausible even
- * for short lessons.
+ * for short lessons. Pass a fresh `seedOverride` (e.g. a random number
+ * chosen once per lesson attempt) so replaying the same lesson for extra
+ * practice gets a different distractor mix and order each time, instead of
+ * the exact same run every time.
  */
-export function generateExercises(lesson: Lesson, coursePool: Phrase[], lang: LanguageId): Exercise[] {
+export function generateExercises(
+  lesson: Lesson,
+  coursePool: Phrase[],
+  lang: LanguageId,
+  seedOverride?: number,
+): Exercise[] {
   const pool = coursePool.length >= 6 ? coursePool : lesson.phrases
   const exercises: Exercise[] = []
-  let seed = lesson.phrases.length * 1000 + lesson.id.length
+  let seed = seedOverride ?? lesson.phrases.length * 1000 + lesson.id.length
 
   lesson.phrases.forEach((phrase, i) => {
     seed += i * 31 + 1

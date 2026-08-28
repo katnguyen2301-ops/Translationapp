@@ -8,6 +8,7 @@ export function LessonComplete({
   correctCount,
   wrongCount,
   onContinue,
+  onPracticeAgain,
 }: {
   course: LanguageCourse
   accuracy: number
@@ -15,6 +16,7 @@ export function LessonComplete({
   correctCount: number
   wrongCount: number
   onContinue: () => void
+  onPracticeAgain: () => void
 }) {
   const stars = accuracy >= 0.95 ? 3 : accuracy >= 0.8 ? 2 : accuracy >= 0.5 ? 1 : 0
 
@@ -36,13 +38,21 @@ export function LessonComplete({
         <Stat label="Missed" value={String(wrongCount)} color="text-rose-500" />
       </div>
 
-      <button
-        onClick={onContinue}
-        className="mt-4 w-full max-w-sm rounded-2xl px-8 py-4 text-lg font-extrabold text-white btn-3d"
-        style={{ backgroundColor: course.colorHex, '--btn-shadow': '#00000033' } as CSSProperties}
-      >
-        Continue
-      </button>
+      <div className="flex w-full max-w-sm flex-col gap-3">
+        <button
+          onClick={onContinue}
+          className="rounded-2xl px-8 py-4 text-lg font-extrabold text-white btn-3d"
+          style={{ backgroundColor: course.colorHex, '--btn-shadow': '#00000033' } as CSSProperties}
+        >
+          Continue
+        </button>
+        <button
+          onClick={onPracticeAgain}
+          className="rounded-2xl border-2 border-slate-200 bg-white px-8 py-3 font-bold text-slate-600 hover:bg-slate-50"
+        >
+          🔁 Practice this lesson again
+        </button>
+      </div>
     </div>
   )
 }
