@@ -105,17 +105,42 @@ export function listenOnce(
   }
 }
 
+function normalizeForMatch(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, '')
+}
+
 /** Very lenient similarity check: strip punctuation/spaces/tone-agnostic and compare overlap. */
 export function fuzzyMatch(a: string, b: string): boolean {
-  const norm = (s: string) =>
-    s
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^\p{L}\p{N}]+/gu, '')
-  const na = norm(a)
-  const nb = norm(b)
+  const na = normalizeForMatch(a)
+  const nb = normalizeForMatch(b)
   if (!na || !nb) return false
   if (na === nb) return true
   return na.includes(nb) || nb.includes(na)
+}
+
+export interface WordMatch {
+  word: string
+  matched: boolean
+}
+
+/**
+ * Word-by-word feedback for a speaking attempt: which words of the target
+ * phrase were actually heard in the transcript, tone/diacritic-agnostic so
+ * small mic/recognition slips don't unfairly fail a word.
+ */
+export function wordMatchReport(transcript: string, target: string): WordMatch[] {
+  const heard = new Set(
+    transcript
+      .split(/\s+/)
+      .map(normalizeForMatch)
+      .filter(Boolean),
+  )
+  return target
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => ({ word, matched: heard.has(normalizeForMatch(word)) }))
 }

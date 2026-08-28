@@ -1,12 +1,22 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getCourse } from '../data/courses'
-import type { LanguageId } from '../data/types'
+import type { DialogueLine, LanguageId } from '../data/types'
 import { useProgress } from '../store/useProgress'
 import { TopBar } from '../components/TopBar'
-import { fuzzyMatch, listenOnce, recognitionSupported, speak } from '../lib/speech'
+import { listenOnce, recognitionSupported, speak, wordMatchReport, type WordMatch } from '../lib/speech'
 
-type MicStatus = 'idle' | 'listening' | 'wrong' | 'unsupported'
+type Mode = 'speak' | 'choose'
+type SpeakStatus = 'idle' | 'listening' | 'result' | 'unsupported'
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 export function Roleplay() {
   const { lang, roleplayId } = useParams<{ lang: LanguageId; roleplayId: string }>()
@@ -15,9 +25,11 @@ export function Roleplay() {
   const roleplay = course?.units.map((u) => u.roleplay).find((r) => r?.id === roleplayId)
   const completeDialogue = useProgress((s) => s.completeDialogue)
 
+  const [mode, setMode] = useState<Mode>(recognitionSupported() ? 'speak' : 'choose')
   const [revealed, setRevealed] = useState<Set<number>>(new Set())
-  const [micStatus, setMicStatus] = useState<MicStatus>(recognitionSupported() ? 'idle' : 'unsupported')
-  const [heardText, setHeardText] = useState<string | null>(null)
+  const [speakStatus, setSpeakStatus] = useState<SpeakStatus>(recognitionSupported() ? 'idle' : 'unsupported')
+  const [report, setReport] = useState<WordMatch[] | null>(null)
+  const [wrongChoice, setWrongChoice] = useState<number | null>(null)
 
   const allRevealed = !!roleplay && revealed.size === roleplay.lines.length
 
@@ -41,9 +53,10 @@ export function Roleplay() {
   }, [revealed, roleplay])
 
   useEffect(() => {
-    setMicStatus(recognitionSupported() ? 'idle' : 'unsupported')
-    setHeardText(null)
-  }, [revealed])
+    setSpeakStatus(recognitionSupported() ? 'idle' : 'unsupported')
+    setReport(null)
+    setWrongChoice(null)
+  }, [revealed, mode])
 
   if (!course || !roleplay) {
     return (
@@ -57,25 +70,30 @@ export function Roleplay() {
 
   function attemptSpeak(i: number) {
     const line = roleplay!.lines[i]
-    setMicStatus('listening')
-    setHeardText(null)
+    setSpeakStatus('listening')
+    setReport(null)
     listenOnce(
       course!.speechLang,
       (transcript) => {
-        setHeardText(transcript)
-        if (fuzzyMatch(transcript, line.target)) {
-          setRevealed((s) => new Set([...s, i]))
-          speak(line.target, course!.speechLang)
-        } else {
-          setMicStatus('wrong')
-        }
+        setReport(wordMatchReport(transcript, line.target))
+        setSpeakStatus('result')
       },
-      () => setMicStatus('wrong'),
+      () => setSpeakStatus('idle'),
     )
   }
 
-  function revealAnswer(i: number) {
+  function revealAndAdvance(i: number) {
     setRevealed((s) => new Set([...s, i]))
+    speak(roleplay!.lines[i].target, course!.speechLang)
+  }
+
+  function chooseOption(i: number, optionLine: DialogueLine, optionIndex: number) {
+    if (optionLine.target === roleplay!.lines[i].target) {
+      revealAndAdvance(i)
+    } else {
+      setWrongChoice(optionIndex)
+      setTimeout(() => setWrongChoice(null), 500)
+    }
   }
 
   return (
@@ -83,7 +101,34 @@ export function Roleplay() {
       <TopBar course={course} showBack />
       <div className="mx-auto max-w-xl px-4 py-6">
         <h1 className="text-2xl font-extrabold text-slate-800">🎭 {roleplay.title}</h1>
-        <p className="mb-6 text-slate-500">{roleplay.scenario}</p>
+        <p className="mb-4 text-slate-500">{roleplay.scenario}</p>
+
+        <div className="mb-6 flex gap-2">
+          <button
+            onClick={() => setMode('speak')}
+            disabled={speakStatus === 'unsupported'}
+            className={[
+              'flex-1 rounded-xl px-3 py-2 text-sm font-bold',
+              mode === 'speak' ? 'bg-brand text-white' : 'bg-white text-slate-500',
+              speakStatus === 'unsupported' && 'opacity-40',
+            ].join(' ')}
+          >
+            🎤 Speak it
+          </button>
+          <button
+            onClick={() => setMode('choose')}
+            className={['flex-1 rounded-xl px-3 py-2 text-sm font-bold', mode === 'choose' ? 'bg-brand text-white' : 'bg-white text-slate-500'].join(
+              ' ',
+            )}
+          >
+            🔤 Choose it in {course.englishName}
+          </button>
+        </div>
+        {mode === 'speak' && speakStatus === 'unsupported' && (
+          <p className="-mt-4 mb-6 text-xs text-slate-400">
+            Your browser doesn't support speech recognition, so "Choose it" is used instead.
+          </p>
+        )}
 
         <div className="flex flex-col gap-4">
           {roleplay.lines.map((line, i) => {
@@ -94,42 +139,82 @@ export function Roleplay() {
 
             if (isYou && !isRevealed) {
               const isActive = i === activeIndex
+              const effectiveMode = speakStatus === 'unsupported' ? 'choose' : mode
+
+              const decoys = shuffle(
+                roleplay.lines.filter((l, j) => j !== i && l.speaker === 'you' && l.target !== line.target),
+              ).slice(0, 3)
+              const options = isActive ? shuffle([line, ...decoys]) : []
+
               return (
                 <div key={i} className="flex justify-end">
                   <div className="flex max-w-[85%] flex-col gap-3 rounded-2xl rounded-tr-sm border-2 border-dashed border-brand/40 bg-green-50 p-4">
                     <p className="text-xs font-bold uppercase text-slate-400">You need to say</p>
                     <p className="text-lg font-bold text-slate-800">{line.en}</p>
 
-                    {micStatus === 'unsupported' ? (
-                      <p className="text-sm text-slate-500">
-                        Your browser doesn't support speech recognition here.
-                      </p>
-                    ) : isActive ? (
+                    {isActive && effectiveMode === 'choose' && (
+                      <div className="flex flex-col gap-2">
+                        {options.map((opt, oi) => (
+                          <button
+                            key={oi}
+                            onClick={() => chooseOption(i, opt, oi)}
+                            className={[
+                              'rounded-xl border-2 px-3 py-2 text-left text-base font-semibold',
+                              wrongChoice === oi
+                                ? 'animate-shake border-rose-400 bg-rose-50 text-rose-600'
+                                : 'border-slate-200 bg-white hover:border-brand hover:bg-green-50',
+                            ].join(' ')}
+                          >
+                            {opt.target}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {isActive && effectiveMode === 'speak' && (
                       <>
-                        {heardText && micStatus === 'wrong' && (
-                          <p className="text-sm text-slate-500">
-                            I heard: <span className="italic">"{heardText}"</span>
-                          </p>
+                        {report && (
+                          <div className="rounded-xl bg-white p-3">
+                            <p className="mb-1 text-xs font-bold uppercase text-slate-400">Here's what you said:</p>
+                            <p className="text-lg font-bold">
+                              {report.map((w, wi) => (
+                                <span key={wi} className={w.matched ? 'text-green-600' : 'text-rose-500 underline decoration-wavy'}>
+                                  {w.word}
+                                  {wi < report.length - 1 ? ' ' : ''}
+                                </span>
+                              ))}
+                            </p>
+                          </div>
                         )}
-                        <button
-                          onClick={() => attemptSpeak(i)}
-                          disabled={micStatus === 'listening'}
-                          className={[
-                            'rounded-2xl px-4 py-3 font-extrabold text-white btn-3d',
-                            micStatus === 'wrong' ? 'bg-amber-500' : 'bg-brand',
-                          ].join(' ')}
-                        >
-                          {micStatus === 'listening'
-                            ? '🎙️ Listening…'
-                            : micStatus === 'wrong'
-                              ? '🔁 Try again'
-                              : `🎤 Speak in ${course.englishName}`}
-                        </button>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => attemptSpeak(i)}
+                            disabled={speakStatus === 'listening'}
+                            className={[
+                              'rounded-2xl px-4 py-3 font-extrabold text-white btn-3d',
+                              speakStatus === 'result' ? 'bg-amber-500' : 'bg-brand',
+                            ].join(' ')}
+                          >
+                            {speakStatus === 'listening'
+                              ? '🎙️ Listening…'
+                              : speakStatus === 'result'
+                                ? '🔁 Try again'
+                                : `🎤 Speak in ${course.englishName}`}
+                          </button>
+                          {report && (
+                            <button
+                              onClick={() => revealAndAdvance(i)}
+                              className="rounded-2xl bg-slate-700 px-4 py-3 font-extrabold text-white btn-3d"
+                            >
+                              Continue
+                            </button>
+                          )}
+                        </div>
                       </>
-                    ) : null}
+                    )}
 
                     <button
-                      onClick={() => revealAnswer(i)}
+                      onClick={() => revealAndAdvance(i)}
                       className="text-left text-xs font-bold text-slate-400 underline hover:text-slate-600"
                     >
                       Show me the answer
