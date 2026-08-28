@@ -14,11 +14,26 @@ export function speechSupported(): boolean {
   return typeof window !== 'undefined' && !!window.speechSynthesis
 }
 
+/**
+ * Picks the most natural-sounding available voice for a language. Browsers
+ * often ship both a robotic on-device voice and a much better cloud/neural
+ * voice (e.g. Chrome's "Google 普通话（中国大陆）") for the same language —
+ * prefer those over local ones, since they sound far less robotic.
+ */
 function pickVoice(lang: string): SpeechSynthesisVoice | undefined {
-  const exact = voicesCache.find((v) => v.lang === lang)
-  if (exact) return exact
   const prefix = lang.split('-')[0]
-  return voicesCache.find((v) => v.lang.startsWith(prefix))
+  const candidates = voicesCache.filter((v) => v.lang === lang || v.lang.startsWith(prefix))
+  if (candidates.length === 0) return undefined
+
+  function score(v: SpeechSynthesisVoice): number {
+    let s = 0
+    if (v.lang === lang) s += 10
+    if (!v.localService) s += 5 // cloud/neural voices tend to sound more natural
+    if (/google|natural|neural|premium|enhanced/i.test(v.name)) s += 3
+    return s
+  }
+
+  return [...candidates].sort((a, b) => score(b) - score(a))[0]
 }
 
 /** Speak the given text using the browser's TTS voice for the given BCP-47 lang. */

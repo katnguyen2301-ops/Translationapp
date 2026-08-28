@@ -4,6 +4,7 @@ import { getCourse } from '../data/courses'
 import type { LanguageId } from '../data/types'
 import { useProgress } from '../store/useProgress'
 import { TopBar } from '../components/TopBar'
+import { ShadowMic } from '../components/ShadowMic'
 import { speak } from '../lib/speech'
 
 export function DialoguePage() {
@@ -21,6 +22,20 @@ export function DialoguePage() {
     if (allRevealed && dialogue) completeDialogue(dialogue.id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allRevealed])
+
+  // Patient lines have no "what do you say?" choice, so nothing else ever
+  // marks them revealed — auto-reveal each one as soon as it becomes visible
+  // so the conversation keeps flowing past them.
+  useEffect(() => {
+    if (!dialogue) return
+    for (let i = 0; i < dialogue.lines.length; i++) {
+      const canShow = i === 0 || revealed.has(i - 1)
+      if (canShow && !revealed.has(i) && dialogue.lines[i].speaker !== 'you') {
+        setRevealed((s) => new Set([...s, i]))
+        break
+      }
+    }
+  }, [revealed, dialogue])
 
   if (!course || !dialogue) {
     return (
@@ -75,18 +90,20 @@ export function DialoguePage() {
 
             return (
               <div key={i} className={`flex ${isYou ? 'justify-end' : 'justify-start'}`}>
-                <button
-                  onClick={() => speak(line.target, course.speechLang)}
+                <div
                   className={[
                     'animate-pop max-w-[85%] rounded-2xl px-4 py-3 text-left shadow-sm',
                     isYou ? 'rounded-tr-sm bg-brand text-white' : 'rounded-tl-sm bg-white text-slate-800',
                   ].join(' ')}
                 >
-                  <p className="text-xs font-bold uppercase opacity-70">{isYou ? 'You' : 'Patient'} 🔊</p>
-                  <p className="text-lg font-bold">{line.target}</p>
-                  {line.translit && <p className="text-sm opacity-80">{line.translit}</p>}
-                  <p className="mt-1 text-sm opacity-80">{line.en}</p>
-                </button>
+                  <button onClick={() => speak(line.target, course.speechLang)} className="block w-full text-left">
+                    <p className="text-xs font-bold uppercase opacity-70">{isYou ? 'You' : 'Patient'} 🔊</p>
+                    <p className="text-lg font-bold">{line.target}</p>
+                    {line.translit && <p className="text-sm opacity-80">{line.translit}</p>}
+                    <p className="mt-1 text-sm opacity-80">{line.en}</p>
+                  </button>
+                  {isYou && <ShadowMic text={line.target} lang={course.speechLang} />}
+                </div>
               </div>
             )
           })}
