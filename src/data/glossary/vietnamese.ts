@@ -354,4 +354,9 @@ export const vietnameseGlossary: Glossary = {
   may: { en: 'lucky' },
   xử: { en: 'handle (xử lý = "deal with")' },
   lý: { en: 'reason / logic (xử lý = "handle")' },
+  ông: { en: 'you (to an elderly man) / grandfather' },
+  bà: { en: 'you (to an elderly woman) / grandmother' },
+  chú: { en: 'you (to a middle-aged man) / uncle' },
+  cô: { en: 'you (to a middle-aged woman) / aunt' },
+  anh: { en: 'you (to a man close in age or older) / older brother' },
 }

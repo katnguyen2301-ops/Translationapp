@@ -4,6 +4,7 @@ import { getCourse } from '../data/courses'
 import type { LanguageId } from '../data/types'
 import { useProgress } from '../store/useProgress'
 import { TopBar } from '../components/TopBar'
+import { PronounCheatSheet } from '../components/PronounCheatSheet'
 
 export function Learn() {
   const { lang } = useParams<{ lang: LanguageId }>()
@@ -31,6 +32,11 @@ export function Learn() {
     <div className="min-h-screen bg-slate-50 pb-24">
       <TopBar course={course} />
       <div className="mx-auto max-w-xl px-4">
+        {course.id === 'vietnamese' && (
+          <div className="pt-6">
+            <PronounCheatSheet />
+          </div>
+        )}
         {course.units.map((unit) => {
           const unitLessonsDone = unit.lessons.every((l) => !!lessonResults[l.id])
           return (
