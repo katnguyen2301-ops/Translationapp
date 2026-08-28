@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { HashRouter, Route, Routes } from 'react-router-dom'
 import { Home } from './pages/Home'
 import { Learn } from './pages/Learn'
 import { Lesson } from './pages/Lesson'
@@ -7,7 +7,7 @@ import { Profile } from './pages/Profile'
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/learn/:lang" element={<Learn />} />
@@ -15,7 +15,7 @@ function App() {
         <Route path="/learn/:lang/dialogue/:dialogueId" element={<DialoguePage />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 
