@@ -1,7 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getCourse, coursePhrasePool } from '../data/courses'
-import type { LanguageId } from '../data/types'
+import type { Exercise, LanguageId } from '../data/types'
 import { generateExercises } from '../lib/exerciseGenerator'
 import { useProgress } from '../store/useProgress'
 import { TopBar } from '../components/TopBar'
@@ -10,6 +10,8 @@ import { McqQuestion } from '../components/exercises/McqQuestion'
 import { BuildQuestion } from '../components/exercises/BuildQuestion'
 import { MatchQuestion } from '../components/exercises/MatchQuestion'
 import { LessonComplete } from '../components/LessonComplete'
+
+type Phase = 'main' | 'reviewIntro' | 'review'
 
 export function Lesson() {
   const { lang, lessonId } = useParams<{ lang: LanguageId; lessonId: string }>()
@@ -21,16 +23,19 @@ export function Lesson() {
   const heartsNow = useProgress((s) => s.getEffectiveHearts())
   const completeLesson = useProgress((s) => s.completeLesson)
 
-  const exercises = useMemo(() => {
+  const initialExercises = useMemo(() => {
     if (!course || !lesson) return []
     return generateExercises(lesson, coursePhrasePool(course), course.id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson?.id])
 
-  const [index, setIndex] = useState(0)
+  const [mainQueue, setMainQueue] = useState<Exercise[]>(initialExercises)
+  const [reviewQueue, setReviewQueue] = useState<Exercise[]>([])
+  const [phase, setPhase] = useState<Phase>('main')
   const [answeredState, setAnsweredState] = useState<null | boolean>(null)
-  const [correctCount, setCorrectCount] = useState(0)
-  const [wrongCount, setWrongCount] = useState(0)
+  const [resolvedCount, setResolvedCount] = useState(0)
+  const [mistakeIds, setMistakeIds] = useState<Set<string>>(new Set())
+  const [attempt, setAttempt] = useState(0)
   const [done, setDone] = useState(false)
 
   if (!course || !lesson) {
@@ -41,43 +46,89 @@ export function Lesson() {
     )
   }
 
-  const current = exercises[index]
+  const total = initialExercises.length
+  const current = phase === 'review' ? reviewQueue[0] : mainQueue[0]
 
   function handleAnswered(correct: boolean) {
     setAnsweredState(correct)
     if (correct) {
-      setCorrectCount((c) => c + 1)
+      setResolvedCount((c) => c + 1)
     } else {
-      setWrongCount((c) => c + 1)
       loseHeart()
+      setMistakeIds((s) => new Set([...s, current.id]))
     }
   }
 
   function next() {
-    if (index + 1 >= exercises.length) {
-      const total = correctCount + wrongCount
-      const accuracy = total === 0 ? 1 : correctCount / total
-      const xpEarned = 10 + correctCount
-      completeLesson(lesson!.id, accuracy, xpEarned)
-      setDone(true)
+    const wasCorrect = answeredState
+    setAnsweredState(null)
+    setAttempt((a) => a + 1)
+
+    if (phase === 'review') {
+      const [justAnswered, ...rest] = reviewQueue
+      const nextQueue = wasCorrect ? rest : [...rest, justAnswered]
+      setReviewQueue(nextQueue)
+      if (nextQueue.length === 0) finish()
       return
     }
-    setIndex((i) => i + 1)
-    setAnsweredState(null)
+
+    // phase === 'main'
+    const [justAnswered, ...restMain] = mainQueue
+    const newReviewQueue = wasCorrect ? reviewQueue : [...reviewQueue, justAnswered]
+    setMainQueue(restMain)
+    setReviewQueue(newReviewQueue)
+
+    if (restMain.length > 0) return
+
+    if (newReviewQueue.length > 0) {
+      setPhase('reviewIntro')
+    } else {
+      finish()
+    }
+  }
+
+  function startReview() {
+    setPhase('review')
+  }
+
+  function finish() {
+    const accuracy = total === 0 ? 1 : (total - mistakeIds.size) / total
+    const xpEarned = 10 + (total - mistakeIds.size)
+    completeLesson(lesson!.id, accuracy, xpEarned)
+    setDone(true)
   }
 
   if (done) {
-    const total = correctCount + wrongCount
-    const accuracy = total === 0 ? 1 : correctCount / total
+    const accuracy = total === 0 ? 1 : (total - mistakeIds.size) / total
     return (
       <LessonComplete
         course={course}
         accuracy={accuracy}
-        xpEarned={10 + correctCount}
-        correctCount={correctCount}
-        wrongCount={wrongCount}
+        xpEarned={10 + (total - mistakeIds.size)}
+        correctCount={total - mistakeIds.size}
+        wrongCount={mistakeIds.size}
         onContinue={() => navigate(`/learn/${course.id}`)}
       />
+    )
+  }
+
+  if (phase === 'reviewIntro') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-white px-4 text-center">
+        <div className="animate-float text-6xl">🔁</div>
+        <h1 className="text-2xl font-extrabold text-slate-800">Let's review what you missed</h1>
+        <p className="max-w-sm text-slate-500">
+          You'll get another shot at the {reviewQueue.length} question{reviewQueue.length === 1 ? '' : 's'} you
+          missed before finishing the lesson.
+        </p>
+        <button
+          onClick={startReview}
+          className="rounded-2xl px-8 py-3 font-extrabold text-white btn-3d"
+          style={{ backgroundColor: course.colorHex }}
+        >
+          Continue
+        </button>
+      </div>
     )
   }
 
@@ -85,7 +136,10 @@ export function Lesson() {
     <div className="flex min-h-screen flex-col bg-white">
       <TopBar course={course} showBack />
       <div className="mx-auto w-full max-w-2xl px-4 pt-4">
-        <ExerciseProgress current={index} total={exercises.length} />
+        <ExerciseProgress current={resolvedCount} total={total} />
+        {phase === 'review' && (
+          <p className="mt-2 text-center text-sm font-bold text-amber-600">🔁 Reviewing mistakes</p>
+        )}
       </div>
 
       {heartsNow <= 0 && (
@@ -98,11 +152,11 @@ export function Lesson() {
 
       <main className="flex flex-1 flex-col justify-center px-4 py-8">
         {current.kind === 'build' ? (
-          <BuildQuestion exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
+          <BuildQuestion key={attempt} exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
         ) : current.kind === 'match' ? (
-          <MatchQuestion exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
+          <MatchQuestion key={attempt} exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
         ) : (
-          <McqQuestion exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
+          <McqQuestion key={attempt} exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
         )}
       </main>
 
@@ -116,7 +170,7 @@ export function Lesson() {
           <div className="flex items-center gap-2 font-extrabold">
             <span className="text-2xl">{answeredState ? '✅' : '❌'}</span>
             <span className={answeredState ? 'text-green-700' : 'text-rose-600'}>
-              {answeredState ? 'Nice!' : 'Not quite'}
+              {answeredState ? 'Nice!' : "Not quite — you'll see this again"}
             </span>
           </div>
           <button

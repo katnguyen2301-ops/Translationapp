@@ -389,4 +389,23 @@ export const vietnameseCourse: LanguageCourse = {
       ],
     },
   ],
+  roleplay: {
+    id: 'vi-roleplay',
+    title: 'A Full Visit',
+    scenario: 'Practice a whole patient visit from greeting to farewell — you have to speak your own lines out loud.',
+    lines: [
+      { speaker: 'you', en: 'Hello, welcome! What brings you in today?', target: 'Dạ, xin chào, chào mừng anh/chị! Hôm nay anh/chị đến khám gì vậy?' },
+      { speaker: 'patient', en: "My tooth's been hurting for a few days.", target: 'Dạ, răng em đau mấy bữa nay rồi.' },
+      { speaker: 'you', en: 'Oh no, which tooth hurts?', target: 'Vậy hả, răng nào đau vậy?' },
+      { speaker: 'patient', en: 'The lower right one, it hurts when I bite.', target: 'Dạ, cái răng hàm dưới bên phải, cắn vào là đau.' },
+      { speaker: 'you', en: 'Okay, let me take a look first, please open your mouth.', target: 'Dạ được, để tôi coi qua trước, anh/chị há miệng ra giùm.' },
+      { speaker: 'patient', en: 'Okay.', target: 'Dạ.' },
+      { speaker: 'you', en: 'This tooth has a small cavity, it needs a filling.', target: 'Răng này bị sâu chút xíu, cần trám lại.' },
+      { speaker: 'patient', en: 'Will it hurt a lot?', target: 'Có đau nhiều không bác sĩ?' },
+      { speaker: 'you', en: "No, I'll numb it first, you won't feel pain.", target: 'Không đâu, tôi gây tê trước, anh/chị sẽ không thấy đau.' },
+      { speaker: 'patient', en: 'Okay, thank you.', target: 'Dạ, cảm ơn bác sĩ.' },
+      { speaker: 'you', en: "After the filling, don't chew on that side today.", target: 'Trám xong rồi thì hôm nay đừng nhai bên đó nha.' },
+      { speaker: 'patient', en: 'Got it, thank you doctor!', target: 'Dạ, em hiểu rồi, cảm ơn bác sĩ nhiều!' },
+    ],
+  },
 }

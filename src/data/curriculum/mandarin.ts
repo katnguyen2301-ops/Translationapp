@@ -387,4 +387,23 @@ export const mandarinCourse: LanguageCourse = {
       ],
     },
   ],
+  roleplay: {
+    id: 'zh-roleplay',
+    title: 'A Full Visit',
+    scenario: 'Practice a whole patient visit from greeting to farewell — you have to speak your own lines out loud.',
+    lines: [
+      { speaker: 'you', en: 'Hello, welcome! What brings you in today?', target: '您好，欢迎光临！今天是来做什么的呢？', translit: 'nín hǎo, huānyíng guānglín! jīntiān shì lái zuò shénme de ne?' },
+      { speaker: 'patient', en: "My tooth's been hurting for a few days.", target: '我这颗牙疼了好几天了。', translit: 'wǒ zhè kē yá téng le hǎo jǐ tiān le.' },
+      { speaker: 'you', en: 'Oh no, which tooth hurts?', target: '是嘛，是哪颗牙疼呢？', translit: 'shì ma, shì nǎ kē yá téng ne?' },
+      { speaker: 'patient', en: 'The lower right one, it hurts when I bite.', target: '下面右边那颗，一咬东西就疼。', translit: 'xiàmiàn yòubiān nà kē, yì yǎo dōngxi jiù téng.' },
+      { speaker: 'you', en: 'Okay, let me take a look first, please open your mouth.', target: '好，我先检查一下，请张开嘴。', translit: 'hǎo, wǒ xiān jiǎnchá yíxià, qǐng zhāngkāi zuǐ.' },
+      { speaker: 'patient', en: 'Okay.', target: '好的。', translit: 'hǎo de.' },
+      { speaker: 'you', en: 'This tooth has a small cavity, it needs a filling.', target: '您这颗牙有点蛀了，需要补一下。', translit: 'nín zhè kē yá yǒudiǎn zhù le, xūyào bǔ yíxià.' },
+      { speaker: 'patient', en: 'Will it hurt a lot?', target: '会很疼吗？', translit: 'huì hěn téng ma?' },
+      { speaker: 'you', en: "No, I'll numb it first, you won't feel pain.", target: '不会，我先打麻药，您不会觉得疼的。', translit: 'búhuì, wǒ xiān dǎ máyào, nín búhuì juéde téng de.' },
+      { speaker: 'patient', en: 'Okay, thank you.', target: '好，谢谢您。', translit: 'hǎo, xièxie nín.' },
+      { speaker: 'you', en: "After the filling, don't chew on that side today.", target: '补完以后今天不要用这边吃东西啊。', translit: 'bǔwán yǐhòu jīntiān búyào yòng zhè biān chī dōngxi a.' },
+      { speaker: 'patient', en: 'Got it, thank you doctor!', target: '明白了，谢谢医生！', translit: 'míngbai le, xièxie yīshēng!' },
+    ],
+  },
 }

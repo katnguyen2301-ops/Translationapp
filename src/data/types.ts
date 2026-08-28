@@ -56,6 +56,8 @@ export interface LanguageCourse {
   colorClass: string
   colorHex: string
   units: Unit[]
+  /** Capstone free-speaking roleplay: a full simulated patient visit. */
+  roleplay: Dialogue
 }
 
 // ---- Exercises ----
