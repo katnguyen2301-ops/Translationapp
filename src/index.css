@@ -1,0 +1,91 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Nunito', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  --color-mandarin: #ff4b4b;
+  --color-mandarin-dark: #ea2b2b;
+  --color-vietnamese: #1cb0f6;
+  --color-vietnamese-dark: #0d8bcc;
+  --color-brand: #58cc02;
+  --color-brand-dark: #46a302;
+  --color-gold: #ffc800;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background: #fff;
+    color-scheme: light;
+  }
+  button {
+    font-family: inherit;
+  }
+}
+
+@layer utilities {
+  .btn-3d {
+    box-shadow: 0 4px 0 0 var(--btn-shadow, #d1d1d1);
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
+  }
+  .btn-3d:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 0 var(--btn-shadow, #d1d1d1);
+  }
+  .btn-3d:disabled {
+    cursor: not-allowed;
+  }
+  .animate-pop {
+    animation: pop 0.2s ease-out;
+  }
+  .animate-shake {
+    animation: shake 0.4s ease-in-out;
+  }
+  .animate-float {
+    animation: float 2.5s ease-in-out infinite;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
