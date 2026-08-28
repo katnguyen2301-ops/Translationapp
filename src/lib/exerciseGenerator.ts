@@ -32,7 +32,7 @@ function sample<T>(pool: T[], n: number, exclude: T, seed: number): T[] {
   return shuffle(filtered, seed).slice(0, n)
 }
 
-function chunksFor(phrase: Phrase, lang: LanguageId): string[] {
+export function chunksFor(phrase: Phrase, lang: LanguageId): string[] {
   if (phrase.chunks && phrase.chunks.length) return phrase.chunks
   if (lang === 'vietnamese') return phrase.target.split(' ').filter(Boolean)
   // Mandarin fallback: split by character, keep punctuation as its own chip

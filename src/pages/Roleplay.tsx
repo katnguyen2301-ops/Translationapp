@@ -9,10 +9,10 @@ import { fuzzyMatch, listenOnce, recognitionSupported, speak } from '../lib/spee
 type MicStatus = 'idle' | 'listening' | 'wrong' | 'unsupported'
 
 export function Roleplay() {
-  const { lang } = useParams<{ lang: LanguageId }>()
+  const { lang, roleplayId } = useParams<{ lang: LanguageId; roleplayId: string }>()
   const navigate = useNavigate()
   const course = lang ? getCourse(lang) : undefined
-  const roleplay = course?.roleplay
+  const roleplay = course?.units.map((u) => u.roleplay).find((r) => r?.id === roleplayId)
   const completeDialogue = useProgress((s) => s.completeDialogue)
 
   const [revealed, setRevealed] = useState<Set<number>>(new Set())

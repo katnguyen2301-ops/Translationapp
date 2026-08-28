@@ -44,6 +44,8 @@ export interface Unit {
   icon: string
   lessons: Lesson[]
   dialogue?: Dialogue
+  /** Free-speaking roleplay for this unit: listen to a pretend patient, speak your own lines. */
+  roleplay?: Dialogue
 }
 
 export interface LanguageCourse {
@@ -56,9 +58,16 @@ export interface LanguageCourse {
   colorClass: string
   colorHex: string
   units: Unit[]
-  /** Capstone free-speaking roleplay: a full simulated patient visit. */
-  roleplay: Dialogue
 }
+
+/** Word-level gloss for the phrase breakdown shown after repeated mistakes. */
+export interface GlossEntry {
+  /** Pronunciation aid (pinyin for Mandarin). Omitted for Vietnamese -- script is already phonetic. */
+  translit?: string
+  en: string
+}
+
+export type Glossary = Record<string, GlossEntry>
 
 // ---- Exercises ----
 

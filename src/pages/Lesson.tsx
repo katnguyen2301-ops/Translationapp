@@ -10,6 +10,7 @@ import { McqQuestion } from '../components/exercises/McqQuestion'
 import { BuildQuestion } from '../components/exercises/BuildQuestion'
 import { MatchQuestion } from '../components/exercises/MatchQuestion'
 import { LessonComplete } from '../components/LessonComplete'
+import { PhraseBreakdown } from '../components/PhraseBreakdown'
 
 type Phase = 'main' | 'reviewIntro' | 'review'
 
@@ -35,6 +36,7 @@ export function Lesson() {
   const [answeredState, setAnsweredState] = useState<null | boolean>(null)
   const [resolvedCount, setResolvedCount] = useState(0)
   const [mistakeIds, setMistakeIds] = useState<Set<string>>(new Set())
+  const [phraseMissCounts, setPhraseMissCounts] = useState<Record<string, number>>({})
   const [attempt, setAttempt] = useState(0)
   const [done, setDone] = useState(false)
 
@@ -56,6 +58,10 @@ export function Lesson() {
     } else {
       loseHeart()
       setMistakeIds((s) => new Set([...s, current.id]))
+      if (current.kind !== 'match') {
+        const phraseId = current.phrase.id
+        setPhraseMissCounts((m) => ({ ...m, [phraseId]: (m[phraseId] ?? 0) + 1 }))
+      }
     }
   }
 
@@ -157,6 +163,10 @@ export function Lesson() {
           <MatchQuestion key={attempt} exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
         ) : (
           <McqQuestion key={attempt} exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
+        )}
+
+        {current.kind !== 'match' && (phraseMissCounts[current.phrase.id] ?? 0) >= 2 && (
+          <PhraseBreakdown phrase={current.phrase} lang={course.id} speechLang={course.speechLang} />
         )}
       </main>
 

@@ -14,7 +14,7 @@ function App() {
         <Route path="/learn/:lang" element={<Learn />} />
         <Route path="/learn/:lang/lesson/:lessonId" element={<Lesson />} />
         <Route path="/learn/:lang/dialogue/:dialogueId" element={<DialoguePage />} />
-        <Route path="/learn/:lang/roleplay" element={<Roleplay />} />
+        <Route path="/learn/:lang/roleplay/:roleplayId" element={<Roleplay />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
     </HashRouter>

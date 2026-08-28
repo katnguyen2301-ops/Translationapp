@@ -25,8 +25,6 @@ export function Learn() {
   }
 
   const allLessons = course.units.flatMap((u) => u.lessons)
-  const allLessonsDone = allLessons.every((l) => !!lessonResults[l.id])
-  const roleplayDone = !!dialogueCompleted[course.roleplay.id]
   let previousDone = true // first lesson always unlocked
 
   return (
@@ -112,33 +110,36 @@ export function Learn() {
                     {dialogueCompleted[unit.dialogue.id] && <span className="text-sm">✅</span>}
                   </button>
                 )}
+
+                {unit.roleplay && (
+                  <button
+                    disabled={!unitLessonsDone}
+                    onClick={() => navigate(`/learn/${course.id}/roleplay/${unit.roleplay!.id}`)}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <div
+                      className={[
+                        'grid h-16 w-16 place-items-center rounded-full text-2xl shadow-md btn-3d',
+                        unitLessonsDone ? 'text-white' : 'bg-slate-200 text-slate-400',
+                      ].join(' ')}
+                      style={
+                        unitLessonsDone
+                          ? ({ backgroundColor: course.colorHex, '--btn-shadow': shade(course.colorHex) } as CSSProperties)
+                          : undefined
+                      }
+                    >
+                      {unitLessonsDone ? '🎭' : '🔒'}
+                    </div>
+                    <span className="max-w-24 text-center text-xs font-bold text-slate-500">
+                      {unit.roleplay.title}
+                    </span>
+                    {dialogueCompleted[unit.roleplay.id] && <span className="text-sm">✅</span>}
+                  </button>
+                )}
               </div>
             </section>
           )
         })}
-        <section className="mt-10">
-          <button
-            disabled={!allLessonsDone}
-            onClick={() => navigate(`/learn/${course.id}/roleplay`)}
-            className={[
-              'flex w-full items-center gap-4 rounded-2xl p-5 text-left shadow-md btn-3d',
-              allLessonsDone ? 'text-white' : 'bg-slate-200 text-slate-400',
-            ].join(' ')}
-            style={allLessonsDone ? ({ backgroundColor: course.colorHex, '--btn-shadow': shade(course.colorHex) } as CSSProperties) : undefined}
-          >
-            <span className="text-4xl">{allLessonsDone ? '🎭' : '🔒'}</span>
-            <span className="flex-1">
-              <span className="block text-xs font-bold uppercase tracking-wide opacity-80">Capstone roleplay</span>
-              <span className="block text-lg font-extrabold">{course.roleplay.title}</span>
-              <span className="block text-sm opacity-90">
-                {allLessonsDone
-                  ? 'Speak your own lines with a pretend patient — no multiple choice.'
-                  : 'Finish every lesson to unlock this conversation.'}
-              </span>
-            </span>
-            {roleplayDone && <span className="text-2xl">✅</span>}
-          </button>
-        </section>
 
         <p className="mt-10 text-center text-sm text-slate-400">
           {allLessons.length} lessons · Keep the path going!
