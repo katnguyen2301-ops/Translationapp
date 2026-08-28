@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { courseList, totalLessonCount } from '../data/courses'
 import { useProgress } from '../store/useProgress'
+import { useAuth } from '../store/useAuth'
+import { isFirebaseConfigured } from '../lib/firebase'
 
 export function Home() {
   const navigate = useNavigate()
@@ -8,6 +10,7 @@ export function Home() {
   const lessonResults = useProgress((s) => s.lessonResults)
   const streak = useProgress((s) => s.streak)
   const xp = useProgress((s) => s.xp)
+  const user = useAuth((s) => s.user)
 
   function pick(id: (typeof courseList)[number]['id']) {
     setActiveLanguage(id)
@@ -20,9 +23,16 @@ export function Home() {
         <div className="flex items-center gap-2 text-xl font-extrabold text-slate-800">
           <span className="text-3xl">🦷</span> ChairTalk
         </div>
-        <Link to="/profile" className="text-sm font-bold text-slate-500 hover:text-slate-700">
-          Profile →
-        </Link>
+        <div className="flex items-center gap-4">
+          {isFirebaseConfigured && !user && (
+            <Link to="/login" className="text-sm font-bold text-slate-500 hover:text-slate-700">
+              Log in
+            </Link>
+          )}
+          <Link to="/profile" className="text-sm font-bold text-slate-500 hover:text-slate-700">
+            Profile →
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-6 pb-16 pt-6 text-center">

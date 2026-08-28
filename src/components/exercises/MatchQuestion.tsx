@@ -7,6 +7,7 @@ interface Card {
   phraseId: string
   side: 'en' | 'target'
   text: string
+  translit?: string
 }
 
 function shuffleArr<T>(arr: T[]): T[] {
@@ -34,7 +35,13 @@ export function MatchQuestion({
   const rightCards = useMemo(
     () =>
       shuffleArr(
-        exercise.phrases.map((p): Card => ({ key: `tg-${p.id}`, phraseId: p.id, side: 'target', text: p.target })),
+        exercise.phrases.map((p): Card => ({
+          key: `tg-${p.id}`,
+          phraseId: p.id,
+          side: 'target',
+          text: p.target,
+          translit: p.translit,
+        })),
       ),
     [exercise],
   )
@@ -115,6 +122,7 @@ export function MatchQuestion({
           {rightCards.map((c) => (
             <button key={c.key} onClick={() => pick(c)} disabled={solved.has(c.phraseId)} className={cardClass(c)}>
               {c.text}
+              {c.translit && <div className="text-xs font-normal opacity-60">{c.translit}</div>}
             </button>
           ))}
         </div>

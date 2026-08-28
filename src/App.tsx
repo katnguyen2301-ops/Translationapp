@@ -6,12 +6,17 @@ import { DialoguePage } from './pages/DialoguePage'
 import { Roleplay } from './pages/Roleplay'
 import { QuickPhrases } from './pages/QuickPhrases'
 import { Profile } from './pages/Profile'
+import { Login } from './pages/Login'
+import { startProgressSync } from './lib/progressSync'
+
+startProgressSync()
 
 function App() {
   return (
     <HashRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/learn/:lang" element={<Learn />} />
         <Route path="/learn/:lang/lesson/:lessonId" element={<Lesson />} />
         <Route path="/learn/:lang/dialogue/:dialogueId" element={<DialoguePage />} />

@@ -175,7 +175,13 @@ export function Lesson() {
 
       <main className="flex flex-1 flex-col justify-center px-4 py-8">
         {current.kind === 'build' ? (
-          <BuildQuestion key={attempt} exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
+          <BuildQuestion
+            key={attempt}
+            exercise={current}
+            speechLang={course.speechLang}
+            lang={course.id}
+            onAnswered={handleAnswered}
+          />
         ) : current.kind === 'match' ? (
           <MatchQuestion key={attempt} exercise={current} speechLang={course.speechLang} onAnswered={handleAnswered} />
         ) : (

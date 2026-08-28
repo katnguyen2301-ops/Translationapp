@@ -46,6 +46,39 @@ interface ProgressState {
   dailyGoalProgress: () => number
 }
 
+const SYNCED_KEYS = [
+  'activeLanguage',
+  'xp',
+  'xpToday',
+  'xpTodayDate',
+  'streak',
+  'lastActiveDate',
+  'heartsCount',
+  'heartsLastLostAt',
+  'lessonResults',
+  'dialogueCompleted',
+] as const
+
+export type SyncableProgress = Pick<ProgressState, (typeof SYNCED_KEYS)[number]>
+
+/** Snapshot of the fields that get synced to the cloud when a user is logged in. */
+export function getSyncableProgress(): SyncableProgress {
+  const s = useProgress.getState()
+  const out = {} as SyncableProgress
+  for (const key of SYNCED_KEYS) (out as Record<string, unknown>)[key] = s[key]
+  return out
+}
+
+/** Applies a partial remote snapshot (e.g. from Firestore) back into local state. */
+export function applyRemoteProgress(patch: Partial<SyncableProgress>) {
+  const next: Partial<SyncableProgress> = {}
+  for (const key of SYNCED_KEYS) {
+    const value = patch[key]
+    if (value !== undefined) (next as Record<string, unknown>)[key] = value
+  }
+  useProgress.setState(next)
+}
+
 export const useProgress = create<ProgressState>()(
   persist(
     (set, get) => ({

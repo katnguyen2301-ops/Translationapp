@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
-import type { BuildExercise } from '../../data/types'
+import type { BuildExercise, LanguageId } from '../../data/types'
 import { speak } from '../../lib/speech'
+import { pinyinFor } from '../../lib/pinyin'
 
 interface Chip {
   key: string
@@ -10,10 +11,12 @@ interface Chip {
 export function BuildQuestion({
   exercise,
   speechLang,
+  lang,
   onAnswered,
 }: {
   exercise: BuildExercise
   speechLang: string
+  lang: LanguageId
   onAnswered: (correct: boolean) => void
 }) {
   const [bank, setBank] = useState<Chip[]>([])
@@ -73,7 +76,7 @@ export function BuildQuestion({
               onClick={() => removeChip(chip)}
               disabled={checked !== null}
               className={[
-                'animate-pop rounded-xl border-2 px-3 py-2 text-lg font-semibold',
+                'animate-pop flex flex-col items-center rounded-xl border-2 px-3 py-2 text-lg font-semibold',
                 checked === null && 'border-slate-300 bg-white hover:bg-slate-50',
                 checked === true && 'border-brand bg-green-50 text-green-700',
                 checked === false && 'border-rose-400 bg-rose-50 text-rose-600',
@@ -82,6 +85,7 @@ export function BuildQuestion({
                 .join(' ')}
             >
               {chip.text}
+              {lang === 'mandarin' && <span className="text-xs font-normal opacity-70">{pinyinFor(chip.text, lang)}</span>}
             </button>
           ))}
           {answer.length === 0 && <span className="text-slate-300">Tap words below</span>}
@@ -93,10 +97,11 @@ export function BuildQuestion({
           <button
             key={chip.key}
             onClick={() => addChip(chip)}
-            className="rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-lg font-semibold hover:bg-slate-50 btn-3d"
+            className="flex flex-col items-center rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-lg font-semibold hover:bg-slate-50 btn-3d"
             style={{ '--btn-shadow': '#e2e8f0' } as CSSProperties}
           >
             {chip.text}
+            {lang === 'mandarin' && <span className="text-xs font-normal text-slate-400">{pinyinFor(chip.text, lang)}</span>}
           </button>
         ))}
       </div>
@@ -104,6 +109,11 @@ export function BuildQuestion({
       {checked === false && (
         <p className="text-center font-semibold text-rose-500">
           Correct answer: {exercise.correctOrder.join(joiner)}
+          {lang === 'mandarin' && (
+            <span className="mt-1 block text-sm font-normal text-rose-400">
+              {pinyinFor(exercise.correctOrder.join(''), lang)}
+            </span>
+          )}
         </p>
       )}
 

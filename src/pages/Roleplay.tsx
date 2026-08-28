@@ -166,6 +166,7 @@ export function Roleplay() {
                             ].join(' ')}
                           >
                             {opt.target}
+                            {opt.translit && <div className="text-sm font-normal opacity-70">{opt.translit}</div>}
                           </button>
                         ))}
                       </div>

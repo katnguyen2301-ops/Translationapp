@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { courseList } from '../data/courses'
 import { useProgress, MAX_HEARTS } from '../store/useProgress'
+import { useAuth } from '../store/useAuth'
+import { isFirebaseConfigured } from '../lib/firebase'
 import { TopBar } from '../components/TopBar'
 
 export function Profile() {
@@ -9,12 +11,47 @@ export function Profile() {
   const hearts = useProgress((s) => s.getEffectiveHearts())
   const lessonResults = useProgress((s) => s.lessonResults)
   const dailyGoalProgress = useProgress((s) => s.dailyGoalProgress())
+  const user = useAuth((s) => s.user)
+  const signOutUser = useAuth((s) => s.signOutUser)
 
   return (
     <div className="min-h-screen pb-16">
       <TopBar showBack />
       <div className="mx-auto max-w-xl px-4 py-6">
         <h1 className="text-2xl font-extrabold text-slate-800">Your progress</h1>
+
+        {isFirebaseConfigured && (
+          <div className="mt-4 flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-4">
+            {user ? (
+              <>
+                <div>
+                  <p className="text-sm font-bold text-slate-400">Logged in as</p>
+                  <p className="font-bold text-slate-800">{user.name || user.email}</p>
+                  <p className="text-xs text-slate-400">Progress syncs automatically across your devices.</p>
+                </div>
+                <button
+                  onClick={() => signOutUser()}
+                  className="rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className="font-bold text-slate-800">Not logged in</p>
+                  <p className="text-xs text-slate-400">Log in to save your progress across devices.</p>
+                </div>
+                <Link
+                  to="/login"
+                  className="rounded-xl bg-brand px-4 py-2 text-sm font-bold text-white hover:opacity-90"
+                >
+                  Log in
+                </Link>
+              </>
+            )}
+          </div>
+        )}
 
         <div className="mt-4 grid grid-cols-3 gap-3">
           <StatCard icon="🔥" value={streak} label="Day streak" />
